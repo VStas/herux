@@ -1,15 +1,15 @@
 'use strict';
 
-const CB_KEY = 'HeruxCbKey';
-let CB_ID = 0;
-
 class Context {
     constructor(stores, handlers) {
         this.stores = stores;
         this.handlers = handlers;
 
         this.instances = new Map();
-        this.callbacks = new Map();
+        this.listeners = new Map();
+
+        this.changedStores = new Set();
+        this.listeners = [];
     }
 
     dispatch(action) {
@@ -17,13 +17,22 @@ class Context {
         if (!toStores) {
             return;
         }
+
         for (let si = 0; si < toStores.length; ++si) {
             const { storeName, handler } = toStores[si];
             let store = this.instances.get(storeName);
             if (!store) {
                 store = new this.stores.get(storeName);
             }
-            store[handler](action.data);
+            if (store[handler](action.data)) {
+                this.changedStores.add(storeName);
+            }
+        }
+
+        if (this.changedStores.size) {
+
+            this.changedStores.clear();
+            this.calledListeners.clear();
         }
     }
 
@@ -36,10 +45,19 @@ class Context {
         return store;
     }
 
-    listen(storeName, cb) {
-        if (!cb[CB_KEY]) {
-            cb[CB_KEY] = ++CB_ID;
-        }
-        this.callbacks.set(cb[CB_KEY], cb);
+    listen(name, cb) {
+        const names = Array.isArray(name) ? name : [name];
+
+        this.listeners.push({
+            names,
+            cb
+        });
+
+        return () => {
+            for (let ni = 0; ni < names.length; ++ni) {
+                const callbacks = this.listeners.get(names[ni]);
+                callbacks.splice(callbacks.indexOf(cb), 1);
+            }
+        };
     }
 }
