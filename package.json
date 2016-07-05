@@ -4,6 +4,7 @@
   "description": "Herux is little Store/Listen/Dispatch framework like other flux frameworks",
   "main": "index.js",
   "scripts": {
+    "lint": "eslint .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -11,5 +12,8 @@
     "store"
   ],
   "author": "Alexander Rusakov <a_s_rusakov@mail.ru>",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^3.0.1"
+  }
 }
