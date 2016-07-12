@@ -2,10 +2,12 @@
   "name": "herux",
   "version": "0.0.1",
   "description": "Herux is little Store/Listen/Dispatch framework like other flux frameworks",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
+    "dev": "mocha --watch",
     "lint": "eslint .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm run lint && npm run unit",
+    "unit": "mocha"
   },
   "keywords": [
     "flux",

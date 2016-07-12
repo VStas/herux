@@ -1,63 +1,96 @@
 'use strict';
 
 class Context {
-    constructor(stores, handlers) {
-        this.stores = stores;
-        this.handlers = handlers;
+    constructor(app) {
+        this.app = app;
 
         this.instances = new Map();
-        this.listeners = new Map();
 
         this.changedStores = new Set();
         this.listeners = [];
+        this.actions = [];
     }
 
     dispatch(action) {
-        const toStores = this.handlers.get(action.type);
-        if (!toStores) {
-            return;
+        const startProcess = !this.actions.length;
+
+        if (Array.isArray(action)) {
+            this.actions.push.apply(this.actions, action);
+        } else {
+            this.actions.push(action);
         }
 
-        for (let si = 0; si < toStores.length; ++si) {
-            const { storeName, handler } = toStores[si];
-            let store = this.instances.get(storeName);
-            if (!store) {
-                store = new this.stores.get(storeName);
+        if (startProcess) {
+            this.processActions();
+        }
+
+    }
+
+    processActions() {
+        // todo this.handlers -> this.app.handlers
+        for (let ai = 0; ai < this.actions.length; ++ai) {
+            const action = this.actions[ai];
+            const toStores = this.handlers.get(action.type);
+            if (!toStores) {
+                continue;
             }
-            if (store[handler](action.data)) {
-                this.changedStores.add(storeName);
+            for (let si = 0; si < toStores.length; ++si) {
+                const { storeName, handler } = toStores[si];
+                const store = this.getStore(storeName);
+                if (store[handler](action.data)) {
+                    this.changedStores.add(storeName);
+                }
             }
         }
+
 
         if (this.changedStores.size) {
+            const processedActions = this.actions.length;
+
+            for (let li = 0; li < this.listeners.length; ++li) {
+                const listener = this.listeners[li];
+                for (let ni = 0; ni < listener.names.length; ++ni) {
+                    if (this.changedStores.has(listener.names[ni])) {
+                        listener.cb();
+                        break;
+                    }
+                }
+            }
 
             this.changedStores.clear();
-            this.calledListeners.clear();
+
+            if (this.actions.length !== processedActions) {
+                this.actions = this.actions.slice(processedActions);
+                this.processActions();
+            } else {
+                this.actions = [];
+            }
         }
+
     }
 
     getStore(name) {
-        let store = this.instances.get(storeName);
-        if (!store) {
-            store = new this.stores.get(storeName)(storeName);
-            this.stores.set(storeName, store);
+        let store = this.instances.get(name);
+        if (store) {
+            return store;
         }
+
+        store = new this.app.getStoreClassName(this);
+        this.instances.set(name, store);
         return store;
     }
 
     listen(name, cb) {
         const names = Array.isArray(name) ? name : [name];
-
-        this.listeners.push({
+        const listener = {
             names,
             cb
-        });
+        };
+
+        this.listeners.push(listener);
 
         return () => {
-            for (let ni = 0; ni < names.length; ++ni) {
-                const callbacks = this.listeners.get(names[ni]);
-                callbacks.splice(callbacks.indexOf(cb), 1);
-            }
+            this.listeners.splice(this.listeners.indexOf(listener), 1);
         };
     }
 }
