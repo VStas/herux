@@ -11,8 +11,12 @@ class Context {
         this.actions = [];
     }
 
+    /**
+     * @param {Object|Array<Object>} action - some data for change stores
+     * @returns {void}
+     */
     dispatch(action) {
-        const startProcess = !this.actions.length;
+        const inProcessing = this.actions.length;
 
         if (Array.isArray(action)) {
             this.actions.push.apply(this.actions, action);
@@ -20,10 +24,9 @@ class Context {
             this.actions.push(action);
         }
 
-        if (startProcess) {
+        if (!inProcessing) {
             this.processActions();
         }
-
     }
 
     processActions() {
@@ -81,6 +84,8 @@ class Context {
     }
 
     listen(name, cb) {
+        this.canChangeListeners();
+
         const names = Array.isArray(name) ? name : [name];
         const listener = {
             names,
@@ -90,7 +95,19 @@ class Context {
         this.listeners.push(listener);
 
         return () => {
+            this.canChangeListeners();
+
             this.listeners.splice(this.listeners.indexOf(listener), 1);
         };
     }
+
+    canChangeListeners() {
+        if (this.actions.length) {
+            throw new Error(
+                'Can not listen/unlisten while actions processing is in progress'
+            );
+        }
+    }
 }
+
+exports.Context = Context;
