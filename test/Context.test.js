@@ -2,7 +2,7 @@
 
 var should = require('should');
 
-var {Context} = require('../src/Context');
+var {Context} = require('..');
 
 describe('Context', () => {
 

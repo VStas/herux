@@ -19,7 +19,7 @@ class Context {
         const inProcessing = this.actions.length;
 
         if (Array.isArray(action)) {
-            this.actions.push.apply(this.actions, action);
+            this.actions.push(...action); // or push.apply
         } else {
             this.actions.push(action);
         }
@@ -30,17 +30,17 @@ class Context {
     }
 
     processActions() {
-        // todo this.handlers -> this.app.handlers
         for (let ai = 0; ai < this.actions.length; ++ai) {
             const action = this.actions[ai];
-            const toStores = this.handlers.get(action.type);
-            if (!toStores) {
+            const handlers = this.app.handlers.get(action.type);
+            if (!handlers) {
                 continue;
             }
-            for (let si = 0; si < toStores.length; ++si) {
-                const { storeName, handler } = toStores[si];
+            for (let si = 0; si < handlers.length; ++si) {
+                const { selector, method } = handlers[si];
+                const storeName = typeof selector === 'function' ? selector(action.data) : selector;
                 const store = this.getStore(storeName);
-                if (store[handler](action.data)) {
+                if (store[method](action.data)) {
                     this.changedStores.add(storeName);
                 }
             }
@@ -52,9 +52,13 @@ class Context {
 
             for (let li = 0; li < this.listeners.length; ++li) {
                 const listener = this.listeners[li];
-                for (let ni = 0; ni < listener.names.length; ++ni) {
-                    if (this.changedStores.has(listener.names[ni])) {
-                        listener.cb();
+                const {names} = listener;
+                for (let ni = 0; ni < names.length; ++ni) {
+                    if (this.changedStores.has(names[ni])) {
+                        listener.cb.apply(
+                            null,
+                            names.map((name) => this.getStore(name))
+                        );
                         break;
                     }
                 }
@@ -69,7 +73,6 @@ class Context {
                 this.actions = [];
             }
         }
-
     }
 
     getStore(name) {
@@ -77,10 +80,14 @@ class Context {
         if (store) {
             return store;
         }
-
-        store = new this.app.getStoreClassName(this);
+        const storeClass = this.app.getStoreClass(name);
+        store = new storeClass(this);
         this.instances.set(name, store);
         return store;
+    }
+
+    deleteStore(name) {
+        this.instances.delete(name);
     }
 
     listen(name, cb) {

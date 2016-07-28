@@ -1,6 +1,7 @@
 'use strict';
 
-const Context = require('./context'); 
+const {Context} = require('./context');
+const {STATIC, DYNAMIC} = require('./Store');
 
 class Herux {
     constructor() {
@@ -9,33 +10,49 @@ class Herux {
         this.staticStores = new Map();
     }
 
+    /**
+     * @returns {Context} new Herux Context
+     */
     createContext() {
         return new Context(this);
     }
 
     registerStore(storeClass) {
-        if (storeClass.name instanceof RegExp) {
+        let selector = null;
+
+        // todo validation in dev mode
+        if (storeClass.storeType === STATIC) {
+            this.staticStores.set(storeClass.storeName, storeClass);
+            selector = storeClass.storeName;
+        } else if (storeClass.storeType === DYNAMIC) {
             this.dynamicStores.push(storeClass);
         } else {
-            this.staticStores.set(storeClass.name, storeClass);
+            throw new Error(`Unknown Store.type '${storeClass.type}'`);
         }
 
-        if (Array.isArray(storeClass.handlers)) {
-            for (let hi = 0; hi < storeClass.handlers.length; ++hi) {
-                const handler = storeClass.handlers[hi];
-                let list = this.handlers.get(handler.type);
-                if (!list) {
-                    list = [];
-                    this.handlers.set(handler.type, list);
-                }
-                list.push({
-                    storeName: storeClass.name,
-                    handler: handler.name
-                });
-            }
-        } else {
-            // todo
+        const {handlers} = storeClass;
+        for (let hi = 0; hi < handlers.length; ++hi) {
+            const handler = handlers[hi];
+            this.addHandler(handler.type, {
+                selector: selector || handler.selector,
+                method: handler.method
+            });
         }
+    }
+
+    /**
+     * @private
+     * @param {String} type - action type
+     * @param {Object} handlerObj - handler method name
+     * @returns {void}
+     */
+    addHandler(type, handlerObj) {
+        let list = this.handlers.get(type);
+        if (!list) {
+            list = [];
+            this.handlers.set(type, list);
+        }
+        list.push(handlerObj);
     }
 
     /**
@@ -44,20 +61,20 @@ class Herux {
      * @returns {Function} store constructor
      */
     getStoreClass(name) {
+        // search static store
         let storeClass = this.staticStores.get(name);
-        if (!storeClass) {
-            // search dynamic store
-            for (let i = 0; this.dynamicStores.length; ++i) {
-                storeClass = this.dynamicStores[i];
-                if (storeClass.name.test(name)) {
-                    break;
-                }
-            }
-            // dev!
-            if (!storeClass) {
-                throw new Error('Can not find static or dynamic store');
+        if (storeClass) {
+            return storeClass;
+        }
+        // search dynamic store
+        for (let i = 0; i < this.dynamicStores.length; ++i) {
+            storeClass = this.dynamicStores[i];
+            if (storeClass.storePattern.test(name)) {
+                return storeClass;
             }
         }
-        return storeClass;
+        throw new Error('Can not find static or dynamic store');
     }
 }
+
+exports.Herux = Herux;
