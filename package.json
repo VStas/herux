@@ -1,6 +1,6 @@
 {
   "name": "herux",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Herux is little Store/Listen/Dispatch framework like other flux frameworks",
   "main": "src/index.js",
   "scripts": {
