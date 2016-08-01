@@ -2,7 +2,7 @@ Herux
 =====
 We look for Flux, Redux and Fluxible and want to take the best parts of them.
 
-We like functional programming, but we like OOP a lot.
+We like functional programming, but we like OOP more.
 
 Main points
 -----------
