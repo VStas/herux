@@ -9,6 +9,10 @@
     "test": "npm run lint && npm run unit",
     "unit": "mocha"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arusakov/herux"
+  },
   "keywords": [
     "flux",
     "store"
