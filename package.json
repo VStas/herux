@@ -4,6 +4,7 @@
   "description": "Herux is little Store/Listen/Dispatch framework like other flux frameworks",
   "main": "src/index.js",
   "scripts": {
+    "cover": "istanbul cover _mocha",
     "dev": "mocha --watch",
     "lint": "eslint ./src ./test",
     "test": "npm run lint && npm run unit",
@@ -21,6 +22,7 @@
   "license": "MIT",
   "devDependencies": {
     "eslint": "3.1.1",
+    "istanbul": "0.4.4",
     "mocha": "2.5.3",
     "should": "10.0.0"
   }
