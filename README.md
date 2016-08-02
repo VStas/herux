@@ -4,6 +4,8 @@ We look for Flux, Redux and Fluxible and want to take the best parts of them.
 
 We like functional programming, but we like OOP more.
 
+See [examples](https://github.com/arusakov/herux/blob/master/test/integration.test.js)
+
 Main points
 -----------
 * actions are simple objects with type and data
