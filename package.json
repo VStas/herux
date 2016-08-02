@@ -1,6 +1,6 @@
 {
   "name": "herux",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Herux is a little Flux framework with multiple static or dynamic stores, actions and etc",
   "main": "src/index.js",
   "scripts": {
