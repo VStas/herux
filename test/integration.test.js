@@ -35,7 +35,7 @@ class DynamicStore extends Store {
     }
 }
 DynamicStore.storeType = DYNAMIC;
-DynamicStore.storePattern = /store\d+/;
+DynamicStore.storePattern = /^store\d+$/;
 DynamicStore.handlers = [
     {
         method: DynamicStore.prototype.concat.name,
