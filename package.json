@@ -1,7 +1,7 @@
 {
   "name": "herux",
   "version": "0.1.1",
-  "description": "Herux is little Store/Listen/Dispatch framework like other flux frameworks",
+  "description": "Herux is a little Flux framework with multiple static or dynamic stores, actions and etc",
   "main": "src/index.js",
   "scripts": {
     "cover": "istanbul cover _mocha",

@@ -36,7 +36,7 @@ class DynamicStore {
 }
 
 DynamicStore.storeType = 'dynamic';
-DynamicStore.storePattern = /Group\d+/;
+DynamicStore.storePattern = /^Group\d+$/;
 DynamicStore.handlers = [
     {
         method: 'methodName',
